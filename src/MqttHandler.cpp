@@ -417,7 +417,7 @@ void MqttHandler::performOtaUpdate(const char* url, const char* version, const c
             Serial.println("Update erfolgreich! ESP32 startet neu...");
             String okMsg = "V" + String(FW_VERSION) + ":" + String(config.mqtt_client_id) + " - Success! Rebooting...";
             if (config.homeassistant_mqtt_enabled && mqttClient.connected()) mqttClient.publish(statusTopic.c_str(), okMsg.c_str(), false);
-            if (config.friendlamp_mqtt_enabled && config.friendlamp_mqtt_server != "" && mqttClientLamp.connected()) mqttClientLamp.publish(statusTopic.c_str(), okMsg.c_str(), false);
+        if (config.friendlamp_mqtt_enabled && config.friendlamp_mqtt_server != "" && mqttClientLamp.connected()) mqttClientLamp.publish(statusTopic.c_str(), okMsg.c_str(), false);
             if (config.friendlamp_enabled) {
                 ledCtrl.turnOff();
             }
@@ -429,12 +429,13 @@ void MqttHandler::performOtaUpdate(const char* url, const char* version, const c
 }
 
 void MqttHandler::handleLampCallback(char* topic, byte* payload, unsigned int length) {
-    Serial.println("--> handleLampMessage: Function called!");
     String message = "";
     for (unsigned int i = 0; i < length; i++) {
         message += (char)payload[i];
     }
     Serial.printf("Friendlamp MQTT Received [%s]: %s\n", topic, message.c_str());
+    
+    time_t now = time(nullptr);
 
     String otaTriggerTopic = "zwitscherbox/update/trigger";
     if (strcmp(topic, otaTriggerTopic.c_str()) == 0) {
@@ -464,11 +465,29 @@ void MqttHandler::handleLampCallback(char* topic, byte* payload, unsigned int le
         return;
     }
 
+    // --- Ruhemodus Check ---
+    if (isQuietTime()) {
+        Serial.println("--> handleLampCallback: Ignored message due to active Quiet Time.");
+        return;
+    }
+
     if (config.friendlamp_enabled && strcmp(topic, config.zwitscherbox_topic.c_str()) == 0) {
         Serial.println("--> handleLampMessage: Topic matches config.zwitscherbox_topic!");
         
         JsonDocument doc;
         DeserializationError error = deserializeJson(doc, message);
+
+        // --- Zeitstempel Check (Vermeidung von Retained Messages) ---
+        if (!error && !doc["ts"].isNull()) {
+            time_t msgTs = doc["ts"] | 0;
+            if (now > 0 && msgTs > 0) {
+                long age = (long)now - (long)msgTs;
+                if (abs(age) > 60) {
+                    Serial.printf("Signal ignoriert: Veraltet (Alter: %lds)\n", age);
+                    return;
+                }
+            }
+        }
         
         if (!error && !doc["client_id"].isNull()) {
             String senderId = doc["client_id"] | "";
