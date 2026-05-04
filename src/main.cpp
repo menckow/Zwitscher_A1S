@@ -146,8 +146,16 @@ void loop() {
         return; 
     }
     if (webManager.apMode) {
-        webManager.processDns();
-        return; 
+        // Recovery logic: If we are in AP mode but somehow got a STA connection, exit AP mode.
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.println("WiFi recovered while in AP mode. Exiting AP mode.");
+            webManager.apMode = false;
+            ledCtrl.turnOff();
+            // Continue with normal loop
+        } else {
+            webManager.processDns();
+            return; 
+        }
     }
     
     i2s.processActions(); // Polls the ESP32 Audio Kit Buttons

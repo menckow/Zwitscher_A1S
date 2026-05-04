@@ -269,7 +269,12 @@ void AudioEngine::checkPirAndTimeout() {
             i2s.end();
             SD.end();
 
-            esp_sleep_enable_timer_wakeup(1 * 1000000ULL); // Beispiel: Wacht zwar nochmal auf, aber prinzipiell Standby
+            // Konfiguriere Wakeup über den PIR Sensor (Pin geht auf HIGH bei Bewegung)
+            esp_sleep_enable_ext0_wakeup((gpio_num_t)PIR_PIN, 1); 
+            
+            // Optional: Timer Wakeup entfernen, außer es wird periodisches Erwachen gewünscht.
+            // esp_sleep_enable_timer_wakeup(1 * 1000000ULL); 
+            
             esp_deep_sleep_start();
         }
     }

@@ -40,10 +40,14 @@ void MqttHandler::setupWifi() {
     Serial.println(config.wifi_ssid);
 
     WiFi.mode(WIFI_STA);
+    // Verhindert Abbrüche, da der Audio-Stream und SD-Karten-Zugriff
+    // sonst dazu führen können, dass WLAN Beacons verpasst werden.
+    WiFi.setSleep(false); 
+    WiFi.setAutoReconnect(true);
     WiFi.begin(config.wifi_ssid.c_str(), config.wifi_pass.c_str());
 
     unsigned long startAttemptTime = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 15000) {
+    while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 30000) {
         Serial.print(".");
         delay(500);
     }
@@ -201,7 +205,8 @@ void MqttHandler::update() {
             static unsigned long lastWifiCheck = 0;
             if (millis() - lastWifiCheck > 30000) { 
                 Serial.println("WiFi disconnected. Attempting reconnect...");
-                WiFi.disconnect();
+                // Ein WiFi.disconnect() an dieser Stelle löscht oft die Credentials im RAM
+                // oder stört die State Machine, wodurch reconnect() fehlschlägt.
                 WiFi.reconnect();
                 lastWifiCheck = millis();
             }
