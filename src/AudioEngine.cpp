@@ -216,6 +216,10 @@ void AudioEngine::checkPirAndTimeout() {
 
     if (currentState == PlaybackState::IDLE || currentState == PlaybackState::STANDBY) {
         if (pirStateHigh) {
+            // Check if PIR should be ignored during quiet time
+            if (config.quiet_time_pir_disabled && mqttHandler.isQuietTime()) {
+                return;
+            }
             lastPirActivityTime = millis();
             if (currentState == PlaybackState::STANDBY) {
                 currentState = PlaybackState::IDLE;
