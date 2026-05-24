@@ -11,6 +11,17 @@ Während das ursprüngliche Projekt auf modulare, generische ESP32-Komponenten a
 * **PIR Sensor**: Löst die Audio-Wiedergabe per Bewegungsmelder aus (auf **Pin 12**).
 * **Mac OS Kompatibilität**: Beinhaltet einen aktiven Filter zum Ignorieren von `._` AppleDouble-Geisterdateien auf der FAT32 SD-Karte.
 
+## 🔘 Tasten-Funktionen & IP-Adresse Visualisierung
+
+Der Verzeichnis-Wechsel-Taster (beim Audio Kit **KEY4 / IO23**) besitzt eine Doppelfunktion:
+* **Kurzer Druck (< 3 Sekunden)**: Stoppt die aktuelle Wiedergabe, wechselt zum nächsten Ordner auf der SD-Karte und spielt das entsprechende Intro ab.
+* **Langer Druck (>= 3 Sekunden)**: Visualisiert die **letzte Zahl der lokalen IP-Adresse** über den gesamten LED-Ring (Blink-Modus).
+  * **Ablauf & Blinkmuster**:
+    * Die letzte Zahl der IP-Adresse (z. B. `174` bei `192.168.178.174`) wird Ziffer für Ziffer ausgegeben.
+    * Jede Ziffer $D$ (0 bis 9) wird durch **$D + 1$ weißes Blinken** dargestellt (jeweils 500 ms AN / 500 ms AUS).
+    * Als Trennzeichen zwischen Hunderter, Zehner und Einer leuchtet der gesamte LED-Ring für **1 Sekunde durchgehend Rot** (gefolgt von 500 ms Pause).
+  * **Hinweis**: Das Loslassen des Tasters nach Beginn der IP-Anzeige führt **nicht** zu einem Verzeichniswechsel.
+
 ## Architektur (identisch zum Original)
 Die Software-Architektur bleibt dem Hauptprojekt (`Zwitscher`) treu:
 * `WebManager`: AsyncWebServer mit LittleFS für das Captive Portal und die Konfigurations-Infrastruktur.
