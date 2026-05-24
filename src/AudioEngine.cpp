@@ -1,4 +1,5 @@
 #include "AudioEngine.h"
+#include <WiFi.h>
 #include "AppConfig.h"
 #include "HardwareConfig.h"
 #include "MqttHandler.h"
@@ -26,6 +27,9 @@ AudioEngine::AudioEngine() {
     currentDirectoryIndex = -1;
     introFileName = "intro.mp3";
     currentVolume = 0.6;
+    buttonPressStartTime = 0;
+    buttonHeldActive = false;
+    ipDisplayTriggered = false;
 }
 
 void AudioEngine::init() {
@@ -56,6 +60,13 @@ void AudioEngine::init() {
 }
 
 void AudioEngine::update() {
+    // Check for long press while held
+    if (buttonHeldActive && (millis() - buttonPressStartTime >= 3000)) {
+        ipDisplayTriggered = true;
+        buttonHeldActive = false;
+        displayIpAddress();
+    }
+
     // audio-tools non-blocking copy
     if (currentState == PlaybackState::PLAYING_RANDOM || currentState == PlaybackState::PLAYING_INTRO) {
         if (!copier.copy()) {
@@ -321,4 +332,68 @@ void AudioEngine::nextDirectory() {
         preferences.end();
     }
     lastPirActivityTime = millis();
+}
+
+
+void AudioEngine::handleDirectoryButton(bool active) {
+    if (active) {
+        // Pressed down
+        buttonPressStartTime = millis();
+        buttonHeldActive = true;
+        ipDisplayTriggered = false;
+        lastPirActivityTime = millis();
+        if (currentState == PlaybackState::STANDBY) {
+            currentState = PlaybackState::IDLE;
+            mqttHandler.publish(config.getTopicStatus(), "Woke up from Standby");
+        }
+    } else {
+        // Released
+        buttonHeldActive = false;
+        if (!ipDisplayTriggered) {
+            // Normal short press: change directory!
+            nextDirectory();
+        }
+        ipDisplayTriggered = false;
+    }
+}
+
+void AudioEngine::displayIpAddress() {
+    Serial.println("\n--- Displaying last digit of IP address (Blink Mode) ---");
+    stopPlayback();
+    
+    uint8_t lastOctet = WiFi.localIP()[3];
+    Serial.printf("Last octet of IP: %u\n", lastOctet);
+    
+    String ipStr = String(lastOctet);
+    uint8_t brightness = config.led_brightness;
+    uint32_t whiteColor = Adafruit_NeoPixel::Color(brightness, brightness, brightness);
+    uint32_t redColor = Adafruit_NeoPixel::Color(brightness, 0, 0);
+
+    int ledCountToUse = 999; 
+
+    for (size_t i = 0; i < ipStr.length(); i++) {
+        int digit = ipStr[i] - '0';
+        int blinkCount = digit + 1;
+        
+        Serial.printf("Digit %d: Blinking %d times white\n", digit, blinkCount);
+        
+        for (int b = 0; b < blinkCount; b++) {
+            ledCtrl.showIpDigit(ledCountToUse, whiteColor);
+            delay(500);
+            ledCtrl.turnOff();
+            delay(500);
+        }
+        
+        // Trennzeichen anzeigen (Rot für 1 Sekunde), falls eine weitere Ziffer folgt
+        if (i < ipStr.length() - 1) {
+            Serial.println("Separator: Red for 1 second");
+            ledCtrl.showIpDigit(ledCountToUse, redColor);
+            delay(1000);
+            ledCtrl.turnOff();
+            delay(500); // Pause vor der nächsten Ziffer
+        }
+    }
+    
+    ledCtrl.turnOff();
+    Serial.println("IP display finished.");
 }

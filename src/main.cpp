@@ -52,7 +52,7 @@ void volumeDownAPI(bool active, int repetitions, void *parameter) {
     if(active) audioEngine.decreaseVolume(); 
 }
 void nextDirAPI(bool active, int repetitions, void *parameter) { 
-    if(active) audioEngine.nextDirectory(); 
+    audioEngine.handleDirectoryButton(active); 
 }
 
 void setup() {

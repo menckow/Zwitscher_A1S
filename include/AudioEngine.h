@@ -31,6 +31,10 @@ private:
     float currentVolume = 0.6; 
 
     void loadFilesFromCurrentDirectory();
+    unsigned long buttonPressStartTime;
+    bool buttonHeldActive;
+    bool ipDisplayTriggered;
+    void displayIpAddress();
 
 public:
     AudioEngine();
@@ -52,6 +56,7 @@ public:
     void increaseVolume();
     void decreaseVolume();
     void nextDirectory();
+    void handleDirectoryButton(bool active);
 
     PlaybackState getState() const { return currentState; }
     void setState(PlaybackState state) { currentState = state; }
