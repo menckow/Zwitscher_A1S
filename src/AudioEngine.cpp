@@ -60,11 +60,22 @@ void AudioEngine::init() {
 }
 
 void AudioEngine::update() {
-    // Check for long press while held
-    if (buttonHeldActive && (millis() - buttonPressStartTime >= 3000)) {
-        ipDisplayTriggered = true;
-        buttonHeldActive = false;
-        displayIpAddress();
+    // Check for button press / release / long press (KEY4 is physically on GPIO 23, active-LOW)
+    if (buttonHeldActive) {
+        if (digitalRead(23) == HIGH) {
+            // Button was physically released!
+            buttonHeldActive = false;
+            if (!ipDisplayTriggered) {
+                // Normal short press: change directory!
+                nextDirectory();
+            }
+            ipDisplayTriggered = false;
+        } else if (millis() - buttonPressStartTime >= 3000) {
+            // Held for 3 seconds!
+            ipDisplayTriggered = true;
+            buttonHeldActive = false;
+            displayIpAddress();
+        }
     }
 
     // audio-tools non-blocking copy
@@ -346,14 +357,6 @@ void AudioEngine::handleDirectoryButton(bool active) {
             currentState = PlaybackState::IDLE;
             mqttHandler.publish(config.getTopicStatus(), "Woke up from Standby");
         }
-    } else {
-        // Released
-        buttonHeldActive = false;
-        if (!ipDisplayTriggered) {
-            // Normal short press: change directory!
-            nextDirectory();
-        }
-        ipDisplayTriggered = false;
     }
 }
 
