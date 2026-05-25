@@ -13,14 +13,13 @@ Während das ursprüngliche Projekt auf modulare, generische ESP32-Komponenten a
 
 ## 🔘 Tasten-Funktionen & IP-Adresse Visualisierung
 
-Der Verzeichnis-Wechsel-Taster (beim Audio Kit **KEY4 / IO23**) besitzt eine Doppelfunktion:
-* **Kurzer Druck (< 3 Sekunden)**: Stoppt die aktuelle Wiedergabe, wechselt zum nächsten Ordner auf der SD-Karte und spielt das entsprechende Intro ab.
-* **Langer Druck (>= 3 Sekunden)**: Visualisiert die **letzte Zahl der lokalen IP-Adresse** über den gesamten LED-Ring (Blink-Modus).
+Auf dem ESP32 Audio Kit werden folgende Tasten verwendet:
+* **KEY4 (IO23 - Taster für Verzeichniswechsel)**: Ein einfacher Druck stoppt die Wiedergabe, wechselt zum nächsten Verzeichnis auf der SD-Karte und spielt das Intro ab.
+* **KEY5 (IO18 - Trenntaste / ehem. Prev)**: Ein einfacher Druck startet direkt die blinkende Visualisierung der **letzten Zahl der lokalen IP-Adresse** auf dem LED-Ring.
   * **Ablauf & Blinkmuster**:
     * Die letzte Zahl der IP-Adresse (z. B. `174` bei `192.168.178.174`) wird Ziffer für Ziffer ausgegeben.
     * Jede Ziffer $D$ (0 bis 9) wird durch **$D + 1$ weißes Blinken** dargestellt (jeweils 500 ms AN / 500 ms AUS).
-    * Als Trennzeichen zwischen Hunderter, Zehner und Einer leuchtet der gesamte LED-Ring für **1 Sekunde durchgehend Rot** (gefolgt von 500 ms Pause).
-  * **Hinweis**: Das Loslassen des Tasters nach Beginn der IP-Anzeige führt **nicht** zu einem Verzeichniswechsel.
+    * Als Trennzeichen leuchtet der gesamte LED-Ring für **1 Sekunde durchgehend Rot** (gefolgt von 500 ms Pause).
 
 ## Architektur (identisch zum Original)
 Die Software-Architektur bleibt dem Hauptprojekt (`Zwitscher`) treu:
