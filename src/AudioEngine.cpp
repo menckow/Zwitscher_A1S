@@ -27,9 +27,6 @@ AudioEngine::AudioEngine() {
     currentDirectoryIndex = -1;
     introFileName = "intro.mp3";
     currentVolume = 0.6;
-    buttonPressStartTime = 0;
-    buttonHeldActive = false;
-    ipDisplayTriggered = false;
 }
 
 void AudioEngine::init() {
@@ -60,24 +57,6 @@ void AudioEngine::init() {
 }
 
 void AudioEngine::update() {
-    // Check for button press / release / long press (KEY4 is physically on GPIO 23, active-LOW)
-    if (buttonHeldActive) {
-        if (digitalRead(23) == HIGH) {
-            // Button was physically released!
-            buttonHeldActive = false;
-            if (!ipDisplayTriggered) {
-                // Normal short press: change directory!
-                nextDirectory();
-            }
-            ipDisplayTriggered = false;
-        } else if (millis() - buttonPressStartTime >= 3000) {
-            // Held for 3 seconds!
-            ipDisplayTriggered = true;
-            buttonHeldActive = false;
-            displayIpAddress();
-        }
-    }
-
     // audio-tools non-blocking copy
     if (currentState == PlaybackState::PLAYING_RANDOM || currentState == PlaybackState::PLAYING_INTRO) {
         if (!copier.copy()) {
@@ -346,19 +325,7 @@ void AudioEngine::nextDirectory() {
 }
 
 
-void AudioEngine::handleDirectoryButton(bool active) {
-    if (active) {
-        // Pressed down
-        buttonPressStartTime = millis();
-        buttonHeldActive = true;
-        ipDisplayTriggered = false;
-        lastPirActivityTime = millis();
-        if (currentState == PlaybackState::STANDBY) {
-            currentState = PlaybackState::IDLE;
-            mqttHandler.publish(config.getTopicStatus(), "Woke up from Standby");
-        }
-    }
-}
+
 
 void AudioEngine::displayIpAddress() {
     Serial.println("\n--- Displaying last digit of IP address (Blink Mode) ---");

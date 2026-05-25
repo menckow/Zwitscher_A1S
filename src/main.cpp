@@ -52,7 +52,10 @@ void volumeDownAPI(bool active, int repetitions, void *parameter) {
     if(active) audioEngine.decreaseVolume(); 
 }
 void nextDirAPI(bool active, int repetitions, void *parameter) { 
-    audioEngine.handleDirectoryButton(active); 
+    if(active) audioEngine.nextDirectory(); 
+}
+void displayIpAPI(bool active, int repetitions, void *parameter) { 
+    if(active) audioEngine.displayIpAddress(); 
 }
 
 void setup() {
@@ -115,6 +118,7 @@ void setup() {
     i2s.addAction(i2s.getKey(4), volumeUpAPI);     // IO19
     i2s.addAction(i2s.getKey(3), volumeDownAPI);   // IO13
     i2s.addAction(i2s.getKey(5), nextDirAPI);      // IO23
+    i2s.addAction(i2s.getKey(6), displayIpAPI);     // KEY5 / IO18
 
     // Boot Status
     if ((config.homeassistant_mqtt_enabled || config.friendlamp_mqtt_enabled) && WiFi.status() == WL_CONNECTED) {
