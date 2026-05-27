@@ -4,7 +4,11 @@
 #include <PubSubClient.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
+#include <vector>
 #include <time.h>
+
+// Geraete-Typ-Konstante fuer das v2-Schema (siehe fl/.../<type>-Topics).
+#define DEVICE_TYPE_BOX "box"
 
 class MqttHandler {
 private:
@@ -19,12 +23,17 @@ private:
     unsigned long lastLampMqttReconnectAttempt;
     const unsigned long mqttReconnectInterval;
 
+    // v2: Liste der Familien-Signal-Topics (eines pro Familie), aus config.family_ids
+    std::vector<String> _familySignalTopics;
+
     void handleFreundschaftMessage(String payload);
     void handleLampCallback(char* topic, byte* payload, unsigned int length);
     void handleStandardCallback(char* topic, byte* payload, unsigned int length);
 
     void verifyMqttConnection();
     void internalMqttReconnect();
+
+    bool isFamilySignalTopic(const char* topic);
 
 public:
     MqttHandler();
@@ -33,10 +42,16 @@ public:
     void setupWifi();
     void update(); // Main loop tick for MQTT
     void forceReconnect(); // Alias for old mqtt_reconnect()
-    
+
     void publish(const String& topic, const String& payload, bool retain = false);
     void publishLamp(const String& topic, const String& payload, bool retain = false);
-    
+
+    // v2-Helper: aus config.family_ids parsen.
+    std::vector<String> getFamilies();
+    String getFamiliesJsonArray();
+    void publishStatusV2(const char* state, const char* extra = nullptr);
+    String getStatusTopicV2();
+
     void performOtaUpdate(const char* url, const char* version, const char* md5 = nullptr);
 
     bool isQuietTime();
