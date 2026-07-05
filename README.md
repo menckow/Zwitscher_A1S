@@ -4,7 +4,7 @@
 
 Während das ursprüngliche Projekt auf modulare, generische ESP32-Komponenten ausgelegt ist (z.B. externer I2S-Verstärker MAX98357A), wurde diese Variante tiefgreifend für das **ESP32 Audio Kit V2.2 (AI Thinker A1S)** optimiert. Alle kritischen Hardware-Routings des auf dem Board verbauten ES8388 Audio-Codecs sowie des 3-Watt NS4150 Lautsprecher-Verstärkers werden hier nativ und verlustfrei über I2C angesprochen.
 
-Funktional ist die A1S-Variante mit der Hauptlinie auf demselben Stand und spricht das **v2-Familien-Schema** (siehe unten).
+Funktional ist die A1S-Variante mit der Hauptlinie auf demselben Stand und spricht das **v2-Familien-Schema** (siehe unten). Die A1S meldet sich im Schema mit dem Geräte-Typ **`box-a1s`** (statt `box`), damit Familien- und Global-OTAs A1S- und V6-Boxen getrennt adressieren können — sonst würde eine Bulk-Aktion die Hälfte der Boxen mit der falschen Firmware bricken.
 
 ## Features & Hardware-Spezifikationen
 * **Audio-Engine**: Verwendet `arduino-audio-tools` (Phil Schatzmann) mit non-blocking StreamCopy und MP3-Helix Decoder, um flüssiges Multitasking (Webserver, MQTT) während der Wiedergabe zu ermöglichen.
@@ -21,17 +21,17 @@ Die A1S nutzt dieselbe Topic-Topologie wie die Hauptbox und die Freundschaftslam
 | Zweck | Topic | Retained |
 |---|---|---|
 | Familien-Signal | `fl/family/<familyId>/signal` | nein |
-| Gerätestatus (JSON) | `fl/device/<deviceId>/status` | **ja** |
+| Gerätestatus (JSON, `type:"box-a1s"`) | `fl/device/<deviceId>/status` | **ja** |
 | OTA pro Gerät | `fl/device/<deviceId>/update/trigger` | nein |
-| OTA pro Familie (nur Boxen) | `fl/family/<familyId>/update/trigger/box` | nein |
-| Globaler Notfall-Push | `fl/_global/update/trigger/box` | nein |
+| OTA pro Familie (nur A1S-Boxen) | `fl/family/<familyId>/update/trigger/box-a1s` | nein |
+| Globaler Notfall-Push (nur A1S-Boxen) | `fl/_global/update/trigger/box-a1s` | nein |
 | OTA-Backchannel | `fl/device/<deviceId>/update/status` | nein |
 
 Verhaltensregeln im Empfang:
 * **Self-Filter** über `client_id` (Box reagiert nicht auf eigenes Signal).
 * **NTP-Schutz**: Signale älter als 60 s werden verworfen.
-* **`sender_type`-Aware Rendering**: `"lamp"` → Komplementär-Modus (jede 3. LED in der Komplementärfarbe), `"box"` oder leer → Solid-Mode.
-* **Defense-in-depth `target_type`**: Bei OTA-Topics wird zusätzlich geprüft, dass das Payload an `"box"` adressiert ist.
+* **`sender_type`-Aware Rendering**: `"lamp"` → Komplementär-Modus (jede 3. LED in der Komplementärfarbe), `"box"` / `"box-a1s"` oder leer → Solid-Mode. Die Lampe filtert ausgehende Box-Signale per `startsWith("box")`, fängt also auch die A1S-Variante.
+* **Defense-in-depth `target_type`**: Bei OTA-Topics wird zusätzlich geprüft, dass das Payload an `"box-a1s"` adressiert ist (sonst wird's verworfen).
 
 ## 🔄 OTA & Web Upload
 

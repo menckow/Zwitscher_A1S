@@ -232,12 +232,14 @@ void AudioEngine::checkPirAndTimeout() {
 
             if (config.friendlamp_enabled) {
                 // v2: Familien-Signal an alle konfigurierten Familien fanned-out senden.
-                // sender_type='box' damit empfangende Boxen den Solid-Mode (statt
-                // Komplementaer-Mode) nutzen und Lampen das Signal komplett ignorieren.
+                // sender_type=DEVICE_TYPE_BOX damit empfangende Boxen den Solid-Mode
+                // (statt Komplementaer-Mode) nutzen und Lampen das Signal komplett
+                // ignorieren (Lampe filtert per startsWith("box"), faengt also auch
+                // "box-a1s" mit).
                 String hexColor = config.friendlamp_color;
                 if (!hexColor.startsWith("#")) hexColor = "#" + hexColor;
-                String payload = "{\"client_id\":\"" + config.mqtt_client_id +
-                               "\",\"sender_type\":\"box\"" +
+                String payload = String("{\"client_id\":\"") + config.mqtt_client_id +
+                               "\",\"sender_type\":\"" DEVICE_TYPE_BOX "\"" +
                                ",\"color\":\"" + hexColor + "\"" +
                                ",\"effect\":\"fade\",\"duration\":30000" +
                                ",\"ts\":" + String(time(nullptr)) + "}";

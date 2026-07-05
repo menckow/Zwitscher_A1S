@@ -8,7 +8,10 @@
 #include <time.h>
 
 // Geraete-Typ-Konstante fuer das v2-Schema (siehe fl/.../<type>-Topics).
-#define DEVICE_TYPE_BOX "box"
+// A1S nutzt einen eigenen Type-String, weil A1S- und V6-Firmware-Binaries
+// nicht kompatibel sind (anderes Audio-Board) und damit Familien-/Global-OTAs
+// die beiden Varianten getrennt adressieren muessen.
+#define DEVICE_TYPE_BOX "box-a1s"
 
 class MqttHandler {
 private:

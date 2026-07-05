@@ -67,7 +67,7 @@ String MqttHandler::getStatusTopicV2() {
 void MqttHandler::publishStatusV2(const char* state, const char* extra) {
     String topic = getStatusTopicV2();
     String hexColor = config.friendlamp_color;
-    if (!hexColor.startsWith("#")) hexColor = "#" + hexColor;
+    if (!hexColor.equalsIgnoreCase("RAINBOW") && !hexColor.startsWith("#")) hexColor = "#" + hexColor;
 
     String payload;
     payload.reserve(256);
@@ -186,7 +186,7 @@ void MqttHandler::internalMqttReconnect() {
     // v2: gemeinsame Topic-Vorbereitung
     String statusTopicV2 = getStatusTopicV2();
     String hexColor = config.friendlamp_color;
-    if (!hexColor.startsWith("#")) hexColor = "#" + hexColor;
+    if (!hexColor.equalsIgnoreCase("RAINBOW") && !hexColor.startsWith("#")) hexColor = "#" + hexColor;
     String lwtJson = String("{\"type\":\"" DEVICE_TYPE_BOX "\"") +
                      ",\"fw\":\"V" + FW_VERSION + "\"" +
                      ",\"state\":\"offline\"" +
@@ -392,6 +392,7 @@ void MqttHandler::handleFreundschaftMessage(String payload) {
         return;
     }
 
+    if (colorStr.startsWith("#")) colorStr = colorStr.substring(1);
     bool isRainbow = effect.equalsIgnoreCase("rainbow") || colorStr.equalsIgnoreCase("RAINBOW");
     bool isBlink = effect.equalsIgnoreCase("blink");
     
@@ -401,7 +402,6 @@ void MqttHandler::handleFreundschaftMessage(String payload) {
     } else if (hasLegacyRGB) {
         finalColor = parsedColor;
     } else {
-        if (colorStr.startsWith("#")) colorStr = colorStr.substring(1);
         finalColor = strtol(colorStr.c_str(), NULL, 16);
     }
     
@@ -628,9 +628,9 @@ void MqttHandler::handleLampCallback(char* topic, byte* payload, unsigned int le
     long duration = doc["duration"] | 30000;
     String senderType = doc["sender_type"] | "";  // "lamp" oder "box" (oder leer)
 
+    if (colorStr.startsWith("#")) colorStr = colorStr.substring(1);
     bool isRainbow = effect.equalsIgnoreCase("rainbow") || colorStr.equalsIgnoreCase("RAINBOW");
     bool isBlink   = effect.equalsIgnoreCase("blink");
-    if (colorStr.startsWith("#")) colorStr = colorStr.substring(1);
     ledCtrl.currentLedColor = isRainbow ? 0 : strtol(colorStr.c_str(), NULL, 16);
     ledCtrl.ledTimeout = millis() + duration;
     ledCtrl.ledActive = true;
