@@ -1,4 +1,5 @@
 #include "MqttHandler.h"
+#include <ESPmDNS.h>
 #include "GlobalConfig.h"
 #include "LedController.h"
 #include "AudioEngine.h"
@@ -128,6 +129,16 @@ void MqttHandler::setupWifi() {
         Serial.println("\nWiFi connected!");
         Serial.print("IP address: ");
         Serial.println(WiFi.localIP());
+        
+        // Start mDNS responder
+        if (MDNS.begin(config.mqtt_client_id.c_str())) {
+            Serial.print("mDNS responder started. Access at: http://");
+            Serial.print(config.mqtt_client_id);
+            Serial.println(".local");
+            MDNS.addService("http", "tcp", 80);
+        } else {
+            Serial.println("Error setting up mDNS responder!");
+        }
         
         Serial.println("Starting NTP time sync...");
         configTzTime(config.timezone.c_str(), "pool.ntp.org", "time.nist.gov");
