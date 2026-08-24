@@ -61,6 +61,7 @@ void AppConfig::load() {
         else if (key == "FRIENDLAMP_MQTT_TLS_ENABLED") friendlamp_mqtt_tls_enabled = (value == "1");
         else if (key == "FRIENDLAMP_MQTT_INTEGRATION") friendlamp_mqtt_enabled = (value == "1");
         else if (key == "FRIENDLAMP_ENABLE") friendlamp_enabled = (value == "1");
+        else if (key == "FRIENDLAMP_EFFECT") friendlamp_effect = value;
         else if (key == "FRIENDLAMP_COLOR") friendlamp_color = value;
         else if (key == "FRIENDLAMP_TOPIC") friendlamp_topic = value;
         else if (key == "ZWITSCHERBOX_TOPIC") zwitscherbox_topic = value;

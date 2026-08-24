@@ -209,6 +209,22 @@ String WebManager::getHtmlPage() {
     addCheckbox("FRIENDLAMP_ENABLE", "LED Hardware aktivieren", config.friendlamp_enabled, "Nur anhaken, wenn ein LED-Ring angeschlossen ist!");
     addCheckbox("FRIENDLAMP_MQTT_INTEGRATION", "MQTT Modus aktivieren", config.friendlamp_mqtt_enabled, "Vernetzt deine Box über das Internet mit den Boxen deiner Freunde.");
     addColorPicker("FRIENDLAMP_COLOR", "Wähle deine Farbe", config.friendlamp_color, "In dieser Farbe leuchten die Lampen deiner Freunde, wenn DU vor deiner Box stehst.");
+    std::vector<std::pair<String, String>> effectOptions = {
+        {"fade", "Sanftes Einblenden (Standard)"},
+        {"blink", "Blinken"},
+        {"pulse", "Atmen / Pulsieren"},
+        {"chase", "Komet / Lauflicht"},
+        {"sparkle", "Sternenhimmel / Glitzern"},
+        {"aurora", "Nordlicht (Farbspiel)"},
+        {"heartbeat", "Herzschlag"},
+        {"scanner", "Knight Rider / Pendel"},
+        {"radar", "Radar / Sweeper"},
+        {"beacon", "Flugzeug-Doppelblitz"},
+        {"wave", "Wellenbewegung"},
+        {"drift", "Glühwürmchen-Drift"},
+        {"burst", "Feuerwerk / Funke"}
+    };
+    addSelectField("FRIENDLAMP_EFFECT", "LED Effekt", config.friendlamp_effect, effectOptions, "Wie soll der LED-Ring leuchten, wenn ein Signal empfangen wird?");
     addTextField("FAMILY_IDS", "Familienkreise (kommagetrennt)", config.family_ids, "In welchen Familienkreisen ist diese Box? z.B. 'schmidt,lieblings'. Wird beim Empfang von Signalen aus allen aufgelisteten Kreisen ausgewertet.");
     addCheckbox("LED_FADE_EFFECT", "Sanftes Ein-/Ausblenden", config.led_fade_effect, "Nutzt weiche Übergänge für die LEDs anstatt sie hart ein- und auszuschalten.");
     addNumberField("LED_FADE_DURATION", "Dauer (ms)", config.fadeDuration, "Dauer des Farbwechsels in Millisekunden (1000 = 1 Sekunde).");

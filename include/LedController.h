@@ -42,7 +42,7 @@ public:
     void showIpDigit(int numLeds, uint32_t color);
     
     // Legacy Hook wrapper
-    void startFadeIn(uint32_t color, int mode = 0, bool isRainbow = false, bool isBlink = false);
+    void startFadeIn(uint32_t color, int mode = 0, const String& effect = "fade");
     void startFadeOut();
     
     bool isLedActive() const;
@@ -84,5 +84,105 @@ private:
     unsigned long startTime;
 public:
     BlinkEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+
+class PulseEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    PulseEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class ChaseEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    ChaseEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class SparkleEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    SparkleEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class AuroraEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    AuroraEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class HeartbeatEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    HeartbeatEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class ScannerEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    ScannerEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class RadarEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    RadarEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class BeaconEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    BeaconEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class WaveEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    WaveEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class DriftEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    DriftEffect(uint32_t c);
+    bool update(Adafruit_NeoPixel& strip) override;
+};
+
+class BurstEffect : public ILedEffect {
+private:
+    uint32_t color;
+    unsigned long startTime;
+public:
+    BurstEffect(uint32_t c);
     bool update(Adafruit_NeoPixel& strip) override;
 };

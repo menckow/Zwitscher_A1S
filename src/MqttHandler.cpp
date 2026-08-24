@@ -404,11 +404,13 @@ void MqttHandler::handleFreundschaftMessage(String payload) {
     }
 
     if (colorStr.startsWith("#")) colorStr = colorStr.substring(1);
-    bool isRainbow = effect.equalsIgnoreCase("rainbow") || colorStr.equalsIgnoreCase("RAINBOW");
-    bool isBlink = effect.equalsIgnoreCase("blink");
+    String activeEffect = effect;
+    if (colorStr.equalsIgnoreCase("RAINBOW")) {
+        activeEffect = "rainbow";
+    }
     
     uint32_t finalColor = 0;
-    if (isRainbow) {
+    if (activeEffect.equalsIgnoreCase("rainbow")) {
         finalColor = 0;
     } else if (hasLegacyRGB) {
         finalColor = parsedColor;
@@ -418,7 +420,7 @@ void MqttHandler::handleFreundschaftMessage(String payload) {
     
     Serial.printf("--> handleFreundschaftMessage: Activated 3rd LED mode. final value: %u\n", finalColor);
 
-    ledCtrl.startFadeIn(finalColor, 1, isRainbow, isBlink);
+    ledCtrl.startFadeIn(finalColor, 1, activeEffect);
     ledCtrl.ledTimeout = millis() + duration;
     ledCtrl.ledActive = true; 
 }
@@ -640,8 +642,11 @@ void MqttHandler::handleLampCallback(char* topic, byte* payload, unsigned int le
     String senderType = doc["sender_type"] | "";  // "lamp" oder "box" (oder leer)
 
     if (colorStr.startsWith("#")) colorStr = colorStr.substring(1);
-    bool isRainbow = effect.equalsIgnoreCase("rainbow") || colorStr.equalsIgnoreCase("RAINBOW");
-    bool isBlink   = effect.equalsIgnoreCase("blink");
+    String activeEffect = effect;
+    if (colorStr.equalsIgnoreCase("RAINBOW")) {
+        activeEffect = "rainbow";
+    }
+    bool isRainbow = activeEffect.equalsIgnoreCase("rainbow");
     ledCtrl.currentLedColor = isRainbow ? 0 : strtol(colorStr.c_str(), NULL, 16);
     ledCtrl.ledTimeout = millis() + duration;
     ledCtrl.ledActive = true;
@@ -650,7 +655,7 @@ void MqttHandler::handleLampCallback(char* topic, byte* payload, unsigned int le
     // damit der Empfaenger optisch erkennt, dass das Signal von einer Lampe stammt.
     int ringMode = senderType.equalsIgnoreCase("lamp") ? 1 : 0;
     if (config.friendlamp_enabled) {
-        ledCtrl.startFadeIn(ledCtrl.currentLedColor, ringMode, isRainbow, isBlink);
+        ledCtrl.startFadeIn(ledCtrl.currentLedColor, ringMode, activeEffect);
     }
 }
 

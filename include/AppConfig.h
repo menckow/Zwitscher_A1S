@@ -34,6 +34,7 @@ public:
     int    led_count = 16;
     int    fadeDuration = 1000;
     String friendlamp_color = "0000FF";
+    String friendlamp_effect = "fade";
     String friendlamp_topic = "friendlamp/group";       // [deprecated v1] bleibt fuer Kompat erhalten
     String zwitscherbox_topic = "zwitscherbox/group";   // [deprecated v1] bleibt fuer Kompat erhalten
 
