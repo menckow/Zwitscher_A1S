@@ -427,6 +427,7 @@ void WebManager::handleSave(AsyncWebServerRequest *request) {
         colorValue.toUpperCase(); // Konsistent in Großbuchstaben umwandeln
         configFile.println("FRIENDLAMP_COLOR=" + colorValue);
     }
+    writeParam("FRIENDLAMP_EFFECT", "FRIENDLAMP_EFFECT");
     // v2: family_ids normalisiert (trim, lowercase, leere Eintraege weg) schreiben
     if (request->hasParam("FAMILY_IDS", true)) {
         String raw = request->getParam("FAMILY_IDS", true)->value();
