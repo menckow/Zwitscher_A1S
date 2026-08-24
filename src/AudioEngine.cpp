@@ -241,7 +241,7 @@ void AudioEngine::checkPirAndTimeout() {
                 String payload = String("{\"client_id\":\"") + config.mqtt_client_id +
                                "\",\"sender_type\":\"" DEVICE_TYPE_BOX "\"" +
                                ",\"color\":\"" + hexColor + "\"" +
-                               ",\"effect\":\"fade\",\"duration\":30000" +
+                               ",\"effect\":\"" + config.friendlamp_effect + "\",\"duration\":30000" +
                                ",\"ts\":" + String(time(nullptr)) + "}";
 
                 auto families = mqttHandler.getFamilies();
