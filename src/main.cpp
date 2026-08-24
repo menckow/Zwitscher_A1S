@@ -27,7 +27,7 @@ EncodedAudioStream decoder(&i2s, new MP3DecoderHelix());
 StreamCopy copier;
 File audioFile;
 
-const char* FW_VERSION = "8.2.0-A1S"; // Major.Minor.Patch
+const char* FW_VERSION = "8.2.1-A1S"; // Major.Minor.Patch
 
 #include "GlobalConfig.h"
 #include "HardwareConfig.h"

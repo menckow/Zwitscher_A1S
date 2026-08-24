@@ -53,8 +53,31 @@ const char* DEFAULT_ROOT_CA = \
 "-----END CERTIFICATE-----\n";
 
 String WebManager::getHtmlPage() {
+    // Read config.txt
+    String configContent = "";
+    File cFile = SD.open("/config.txt", FILE_READ);
+    if (cFile) {
+        while (cFile.available()) {
+            configContent += (char)cFile.read();
+        }
+        cFile.close();
+    }
+    
+    // HTML Escape configContent
+    String configEscaped = "";
+    configEscaped.reserve(configContent.length());
+    for (size_t i = 0; i < configContent.length(); i++) {
+        char c = configContent[i];
+        if (c == '<') configEscaped += "&lt;";
+        else if (c == '>') configEscaped += "&gt;";
+        else if (c == '&') configEscaped += "&amp;";
+        else if (c == '"') configEscaped += "&quot;";
+        else if (c == '\'') configEscaped += "&#39;";
+        else configEscaped += c;
+    }
+
     String page;
-    page.reserve(12000);
+    page.reserve(12000 + configEscaped.length());
     page += "<html><head><title>Zwitscherbox Konfiguration</title>";
     page += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
     page += "<meta charset='UTF-8'><style>";
@@ -81,6 +104,9 @@ String WebManager::getHtmlPage() {
     page += "input[type=submit]{background-color:#2e7d32;color:white;padding:15px;border:none;border-radius:8px;cursor:pointer;width:100%;font-size:18px;font-weight:bold;margin-top:10px;box-shadow:0 4px 6px rgba(46,125,50,0.2);transition:0.2s;}";
     page += "input[type=submit]:hover{background-color:#1b5e20;transform:translateY(-1px);}";
     page += "input[type=submit]:active{transform:translateY(1px);}";
+    page += ".btn{display:inline-block;background-color:#2e7d32;color:white;padding:12px 20px;text-decoration:none;border-radius:8px;font-weight:bold;border:none;cursor:pointer;font-size:16px;text-align:center;}";
+    page += ".btn-blue{background-color:#1976D2;}";
+    page += ".btn:hover,.btn-blue:hover{opacity:0.9;}";
     
     page += "</style></head><body>";
     page += "<h1>Zwitscherbox</h1>";
@@ -231,6 +257,19 @@ String WebManager::getHtmlPage() {
     page += "<div id='fw_status' style='margin-top:10px;font-size:0.9rem;'></div>";
     page += "</div></form>";
 
+    // --- config.txt Management Card ---
+    page += "<div class='card' style='max-width:600px;margin:20px auto 0 auto;'><h2>Konfigurationsdatei (config.txt)</h2>";
+    page += "<p class='help-text'>Hier kannst du den aktuellen Inhalt der <code>config.txt</code> einsehen, die Datei herunterladen oder eine neue hochladen.</p>";
+    page += "<textarea style='width:100%;height:250px;font-family:monospace;font-size:12px;white-space:pre;overflow:auto;' readonly>" + configEscaped + "</textarea>";
+    page += "<div style='margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;'>";
+    page += "<a href='/api/download-config' class='btn'>\U0001F4E5 Herunterladen</a>";
+    page += "<form id='configUploadForm' enctype='multipart/form-data' onsubmit='return false;' style='display:inline-block;margin:0;width:auto;'>";
+    page += "<input type='file' id='config_file' name='config' accept='.txt' required style='display:none;' onchange='submitConfigUpload()'>";
+    page += "<button type='button' onclick='document.getElementById(\"config_file\").click()' class='btn btn-blue'>\U0001F4E4 Hochladen (config.txt)</button>";
+    page += "</form></div>";
+    page += "<div id='config_status' style='margin-top:10px;font-size:0.9rem;'></div>";
+    page += "</div>";
+
     page += "<script>";
     page += "function uploadFirmware(ev){ev.preventDefault();";
     page += "var f=document.getElementById('fw_file'),m=document.getElementById('fw_md5'),s=document.getElementById('fw_status'),p=document.getElementById('fw_progress'),b=document.getElementById('fw_submit');";
@@ -243,6 +282,20 @@ String WebManager::getHtmlPage() {
     page += "x.onreadystatechange=function(){if(x.readyState===4){b.disabled=false;try{var r=JSON.parse(x.responseText||'{}');if(x.status===200&&r.ok){s.innerHTML='<span style=\"color:#0a0;\">'+(r.msg||'Erfolgreich. Neustart...')+'</span>';setTimeout(function(){location.reload();},10000);}else{s.innerHTML='<span style=\"color:#b00;\">Fehler: '+(r.error||('HTTP '+x.status))+'</span>';}}catch(e){s.innerHTML='<span style=\"color:#b00;\">Unerwartete Antwort (HTTP '+x.status+')</span>';}}};";
     page += "x.onerror=function(){b.disabled=false;s.innerHTML='<span style=\"color:#b00;\">Verbindungsfehler beim Upload.</span>';};";
     page += "b.disabled=true;p.value=0;p.style.display='block';s.innerHTML='Starte Upload...';x.send(fd);return false;}";
+    page += "function submitConfigUpload(){";
+    page += "var f=document.getElementById('config_file'),s=document.getElementById('config_status');";
+    page += "if(!f.files||f.files.length===0)return;";
+    page += "var file=f.files[0];";
+    page += "if(file.name!=='config.txt'){s.innerHTML='<span style=\"color:#b00;\">Die Datei muss genau \"config.txt\" heissen!</span>';return;}";
+    page += "if(!confirm('Moechtest du die config.txt auf der SD-Karte ueberschreiben?'))return;";
+    page += "var fd=new FormData();fd.append('file',file,'/config.txt');";
+    page += "var x=new XMLHttpRequest();x.open('POST','/api/upload',true);";
+    page += "x.onreadystatechange=function(){if(x.readyState===4){";
+    page += "if(x.status===200){s.innerHTML='<span style=\"color:#0a0;\">Hochgeladen! Seite wird neu geladen...</span>';setTimeout(function(){location.reload();},1500);}";
+    page += "else{s.innerHTML='<span style=\"color:#b00;\">Fehler beim Hochladen (HTTP '+x.status+')</span>';}";
+    page += "}};";
+    page += "x.send(fd);";
+    page += "}";
     page += "</script>";
 
     page += "<div style='height:40px;'></div></body></html>";
@@ -435,6 +488,15 @@ void WebManager::setupWebServer() {
   server.on("/files", HTTP_GET, [this](AsyncWebServerRequest *request){
     if (!checkAuth(request)) return;
     request->send(200, "text/html", getFileManagerHtml());
+  });
+
+  server.on("/api/download-config", HTTP_GET, [this](AsyncWebServerRequest *request){
+    if (!checkAuth(request)) return;
+    if (SD.exists("/config.txt")) {
+        request->send(SD, "/config.txt", "application/octet-stream");
+    } else {
+        request->send(404, "text/plain", "config.txt nicht gefunden");
+    }
   });
 
   server.on("/api/list", HTTP_GET, [this](AsyncWebServerRequest *request){
